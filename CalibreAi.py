@@ -13,13 +13,14 @@ except ImportError:
 
 # --- Configuration ---
 
+
 class AIProvider:
     def __init__(self, name, key_env_var, is_configured=False):
         self.name = name
         self.key_env_var = key_env_var
         self.is_configured = is_configured
         self.api_keys = []
-        
+
     def configure(self, api_keys):
         if not api_keys:
             return False
@@ -30,14 +31,17 @@ class AIProvider:
     def get_random_key(self):
         return random.choice(self.api_keys) if self.api_keys else None
 
+
 class AIProviders:
     GEMINI = AIProvider("Gemini", "GOOGLE_API_KEYS")
     OPENAI = AIProvider("OpenAI", "OPENAI_API_KEYS")
+
 
 def parse_keys_from_env(env_var):
     """Parse comma-separated API keys from environment variable."""
     keys = os.getenv(env_var, "").strip()
     return [k.strip() for k in keys.split(",")] if keys else []
+
 
 def configure_ai():
     """
@@ -175,7 +179,7 @@ def generate_tags_with_gemini(title, description, provider):
     """Generate tags using Google's Gemini AI."""
     import time
     time.sleep(4)  # Add a delay between requests to avoid rate limits
-    
+
     # Rotate API keys on error
     for _ in range(len(provider.api_keys)):
         try:
@@ -189,11 +193,12 @@ def generate_tags_with_gemini(title, description, provider):
             continue
     return None
 
+
 def generate_tags_with_openai(title, description, provider):
     """Generate tags using OpenAI's GPT models."""
     import time
     time.sleep(4)  # Add a delay between requests to avoid rate limits
-    
+
     # Rotate API keys on error
     for _ in range(len(provider.api_keys)):
         try:
@@ -213,6 +218,7 @@ def generate_tags_with_openai(title, description, provider):
             print(f"  ⚠️ Error with OpenAI key: {str(e)}")
             continue
     return None
+
 
 def get_prompt(title, description):
     """Get the appropriate prompt based on available information."""
@@ -250,13 +256,14 @@ def get_prompt(title, description):
     TAGS:
     """
 
+
 def generate_tags_with_ai(title, description, configured_providers):
     """
     Generate tags using available AI providers.
     Tries each configured provider in turn until successful.
     """
     print("  🧠 Asking AI for tags...")
-    
+
     for provider in configured_providers:
         if provider.name == "Gemini":
             result = generate_tags_with_gemini(title, description, provider)
@@ -266,7 +273,7 @@ def generate_tags_with_ai(title, description, configured_providers):
             result = generate_tags_with_openai(title, description, provider)
             if result:
                 return result
-    
+
     return None
 
 # --- Main Execution Logic ---
@@ -298,7 +305,7 @@ def main():
     # Configure AI providers based on user selection
     all_providers = configure_ai()
     selected_providers = []
-    
+
     if args.provider == "all":
         selected_providers = all_providers
     else:
@@ -306,7 +313,7 @@ def main():
             if provider.name.lower() == args.provider:
                 selected_providers = [provider]
                 break
-    
+
     if not selected_providers:
         print(f"Error: No AI providers available for '{args.provider}'")
         return
