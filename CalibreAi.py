@@ -32,7 +32,7 @@ def get_books_from_calibre(library_path, limit=None):
 
     Returns:
         list: A list of dictionaries, where each dictionary represents a book.
-              Returns an empty list on error.
+        Returns an empty list on error.
     """
     print(f"📚 Accessing Calibre library at: {library_path}")
     command = [
