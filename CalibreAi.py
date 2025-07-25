@@ -173,7 +173,8 @@ def set_tags_in_calibre(library_path, book_id, new_tags, overwrite=False):
                 # Handle both string (comma-separated) and list formats
                 existing_tags = existing_data[0]['tags']
                 if isinstance(existing_tags, str):
-                    existing_tags = [tag.strip() for tag in existing_tags.split(',')]
+                    existing_tags = [tag.strip()
+                                     for tag in existing_tags.split(',')]
                 elif isinstance(existing_tags, list):
                     existing_tags = [tag.strip() for tag in existing_tags]
                 # Combine, remove duplicates, and sort
@@ -193,7 +194,8 @@ def set_tags_in_calibre(library_path, book_id, new_tags, overwrite=False):
     ]
 
     try:
-        subprocess.run(command, capture_output=True, text=True, check=True, encoding='utf-8')
+        subprocess.run(command, capture_output=True,
+                       text=True, check=True, encoding='utf-8')
     except subprocess.CalledProcessError as e:
         print(f"   ❌ Error setting metadata for book ID {book_id}.")
         print(f"   Stderr: {e.stderr}")

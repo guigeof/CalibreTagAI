@@ -1,92 +1,80 @@
 # Calibre AI Tagger
-A Python script to automatically tag your Calibre e-book library using the Google Gemini AI. It reads your book's metadata, generates relevant tags based on the title and description, and applies them directly to your Calibre database.
 
-# Features
-Automated Tagging: Intelligently generates tags for genre, themes, setting, and more.
+Automatically tag your Calibre e-book library using AI. Currently supports:
 
-Direct Calibre Integration: Uses Calibre's own command-line tools (calibredb) to read and write metadata safely.
+- Google Gemini AI
+- OpenAI GPT
+- Local Ollama models
 
-Flexible Tagging: Choose to append new tags to existing ones or overwrite them completely.
+## Features
 
-Safety First: Includes a --dry-run mode to preview changes without modifying your library.
+- 🤖 Multiple AI providers support
+- 🔄 Smart tag merging with existing tags
+- 🔍 Dry-run mode for preview
+- ⚡ API key rotation for load balancing
+- 🌐 Local AI support with Ollama
 
-Configurable: Easily limit the number of books processed for quick tests.
+## Prerequisites
 
-# How It Works
-Fetch Books: The script calls calibredb to fetch a list of your books, retrieving each book's ID, title, existing tags, and comments (which typically contain the book's summary).
+- Python 3.8+
+- Calibre with command-line tools
+- At least one of:
+  - Google Gemini API key
+  - OpenAI API key
+  - Ollama installed locally
 
-Generate Tags: For each book, the title and comments are sent to the Gemini AI with a prompt asking it to generate a list of relevant tags.
+## Quick Start
 
-Apply Tags: The script takes the AI-generated tags and uses calibredb again to write them to the book's metadata in your library.
+1. Install dependencies:
 
-# Prerequisites
-Before you begin, ensure you have the following:
+```bash
+pip install -r requirements.txt
+```
 
-- Python 3: You can download it from python.org.
+1. Set up your .env file:
 
-- Calibre: The e-book manager must be installed. You can get it from calibre-ebook.com.
+```env
+# Use any or all of these:
+GOOGLE_API_KEYS=your-gemini-key-1,your-gemini-key-2
+OPENAI_API_KEYS=your-openai-key-1,your-openai-key-2
+OLLAMA_MODEL=mistral:latest  # or any other model you have
+```
 
-- Calibre Command-Line Tools: You must have Calibre's command-line tools installed and available in your system's PATH.
+1. Run a test:
 
-  - macOS: In Calibre, go to ```Preferences -> Miscellaneous -> Install command-line tools```.
-  - Windows: The installer typically adds this to the PATH automatically. Test by running ```calibredb --version``` in Command Prompt.
-  - Linux: Usually handled by your package manager during installation.
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library"  --dry-run --limit 3 --dry-run
+```
 
-- Google AI API Key: The script requires a free API key for the Gemini model. You can obtain one from Google AI Studio.
+## Usage
 
-# Setup and Usage
-## 1. Save the Script
+Basic usage with default settings:
 
-Save the Python code from the project into a file named ```calibre_tagger.py```.
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library" 
+```
 
-## 2. Install Dependencies
+Choose a specific AI provider:
 
-Open your terminal or command prompt and run the following command to install the necessary Python libraries:
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library" --provider [gemini|openai|ollama]
+```
 
-```pip install google-generativeai python-dotenv```
+Replace existing tags instead of merging:
 
-## 3. Create Environment File
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama --overwrite
+```
 
-In the same directory as your script, create a file named .env. Add your Google AI API key to this file:
+## Command-Line Arguments
 
-```GOOGLE_API_KEY="YOUR_API_KEY_HERE"```
+- `--library-path`: Path to Calibre library [--library-path "C:\calibre\library"](required)
+- `--provider`: AI provider to use `[--provider] [gemini|openai|ollama|all] (default: all)
+- `--limit`: Number of books to process [--limit 3] ( leave empty to go through all)
+- `--dry-run`: Preview changes without applying them [--dry-run] (empty to apply)
+- `--overwrite`: Replace existing tags instead of merging [--overwrite] (empty to append/merge)
 
-Replace ```YOUR_API_KEY_HERE``` with your actual key.
+## ⚠️ Backup Reminder
 
-## 4. Run a Test (Dry Run)
-
-IMPORTANT: Always perform a dry run first to preview the tags without changing your library. This example processes the first 5 books it finds.
-
-Replace ```/path/to/your/Calibre Library``` with the actual path to your library.
-
-```python calibre_tagger.py --library-path "/path/to/your/Calibre Library" --dry-run --limit 5 ```
-
-## 5. Run the Tagger
-
-Once you are satisfied with the dry run results, you can run the script on your entire library.
-
-```python calibre_tagger.py --library-path "/path/to/your/Calibre Library"```
-
-To replace all existing tags with the new AI-generated ones, add the ```--overwrite``` flag:
-
-```python calibre_tagger.py --library-path "/path/to/your/Calibre Library" --overwrite```
-
-# ⚠️ Safety and Backup
-Before running any script that modifies your data, always back up your Calibre library. The easiest way to do this is to make a copy of your entire Calibre Library folder and store it in a safe location.
-
-##Command-Line Arguments
-```--library-path```: (Required) The full path to your Calibre library folder.
-
-```--limit```: (Optional) An integer to limit the number of books to process. Useful for testing.
-
-```--dry-run```: (Optional) If included, the script will only print the tags it would apply without making any changes.
-
-```--overwrite```: (Optional) If included, existing tags on a book will be replaced. By default, new tags are appended.
-
-# License
-This project is licensed under the MIT License.
-
-
-# Attribution
-This script was created by Gemini, a large language model trained by Google.
+Always backup your Calibre library before making changes!
 
