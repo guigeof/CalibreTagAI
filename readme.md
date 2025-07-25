@@ -77,4 +77,3 @@ python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama -
 ## ⚠️ Backup Reminder
 
 Always backup your Calibre library before making changes!
-

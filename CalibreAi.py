@@ -203,8 +203,15 @@ def set_tags_in_calibre(library_path, book_id, new_tags, overwrite=False):
 
 # --- AI Tag Generation prompt ---
 
-def get_prompt(title, description, existing_tags=None):
-    """Creates the prompt for the AI based on available book info."""
+def get_prompt(title, description, existing_tags=None, additional_prompt=None):
+    """Creates the prompt for the AI based on available book info.
+
+    Args:
+        title (str): The book title
+        description (str): The book description
+        existing_tags (list|str, optional): Existing tags to consider
+        additional_prompt (str, optional): Additional custom instructions to add to the prompt
+    """
     # Format existing tags if present
     existing_tags_str = ""
     if existing_tags:
@@ -213,45 +220,90 @@ def get_prompt(title, description, existing_tags=None):
         else:
             existing_tags_str = str(existing_tags)
         if existing_tags_str:
-            existing_tags_str = f"\nEXISTING TAGS: {existing_tags_str}"
+            existing_tags_str = f"\nCURRENT TAGS: {existing_tags_str}"
+
+    # Check for numerical patterns or unusual formatting in title
+    import re
+    # Check for various problematic patterns
+    patterns = [
+        r'^\d{10,13}',  # ISBN-like numbers at start
+        r'\.\w+$',      # File extensions
+        r'^\d+[_-]',    # Starting with numbers and underscore/dash
+        r'[A-Z]{2,}-[A-Z]{2,}',  # Multiple uppercase sequences with dash
+        r'\d{6,}',      # Long number sequences
+        r'_\d[A-Z]_',   # Patterns like _6E_
+        r'\d+\.\.\d+',  # Ranges like 1..3
+    ]
+
+    title_has_series = bool(re.search(
+        r'(?:^|\s)(\d+(?:\.\d+)?|\d+[a-z]|[A-Z]\d+|\d+[A-Z]|[vV]\d+)', title))
+    title_needs_rename = any(bool(re.search(pattern, title))
+                             for pattern in patterns)
+
+    # Add appropriate notes based on the title analysis
+    notes = []
+    if title_has_series:
+        notes.append(
+            "Add 'series' if the title contains unusual numbering or format (volume numbers, episode numbers, etc)")
+    if title_needs_rename:
+        notes.append(
+            "Add tag 'rename' as this appears to be a non-standard or system-generated title")
+
+    # Combine formatting notes with additional prompt if provided
+    extra_notes = []
+    if notes:
+        extra_notes.extend([f"{i+6}. {note}" for i, note in enumerate(notes)])
+    if additional_prompt:
+        extra_notes.append(f"{len(extra_notes)+6}. {additional_prompt}")
+    formatting_notes = "\n" + "\n".join(extra_notes) if extra_notes else ""
 
     if description and description.strip():
         return f"""
-Analyze the following book information and generate a list of 8-12 relevant tags.
-The tags should cover genre, sub-genre, key themes, character archetypes, setting, and tone.{existing_tags_str}
+You are a precise book cataloging assistant. Generate 4-6 high-quality, focused tags for this book.{existing_tags_str}
 
 RULES:
-- Return ONLY a single line of comma-separated tags.
-- Do not include any other text, preamble, or explanation.
-- Consider existing tags as inspiration but feel free to add, modify, or improve them.
-- Example format: Fantasy,Epic Fantasy,Magic,Quest,Good vs Evil,Medieval,Dragons,Chosen One
+1. Return ONLY a comma-separated tag, nothing else
+2. Try to include:
+   - 1 main genre or category
+   - 1 theme or subject
+   - 1 target sphere (age, audience, etc)
+3. Use library tags as dictionary if provided
+4. No compound words or concatenated terms (e.g., 'EarthquakeEngineering' → 'earthquake, engineering')
+5. Split multi-concept terms into separate tags
+6. Each tag must be a single, simple word without concatenation
+7. No duplicates or near-synonyms{formatting_notes}
 
-BOOK TITLE: "{title}"
-BOOK DESCRIPTION: "{description}"
+BOOK: "{title}"
+DESCRIPTION: "{description}"
 
 TAGS:
 """
     else:
         return f"""
-Based on this book title, generate a list of 5-8 relevant tags.
-Analyze the title carefully for subject matter, themes, and potential genre.{existing_tags_str}
+You are a precise book cataloging assistant. Generate 3-4 high-quality, focused tags from this title.{existing_tags_str}
 
 RULES:
-- Return ONLY a single line of comma-separated tags.
-- Do not include any other text, preamble, or explanation.
-- Consider existing tags as inspiration but feel free to add, modify, or improve them.
-- Example format: Non-Fiction,History,Ancient Civilizations,Research
+1. Return ONLY a comma-separated tag, nothing else
+2. Try to include:
+   - 1 main genre or category
+   - 1 theme or subject
+   - 1 target sphere (age, audience, etc)
+3. Use library tags as dictionary if provided
+4. No compound words or concatenated terms (e.g., 'EarthquakeEngineering' → 'earthquake, engineering')
+5. Split multi-concept terms into separate tags
+6. Each tag must be a single, simple word without concatenation
+7. No duplicates or near-synonyms{formatting_notes}
 
-BOOK TITLE: "{title}"
+BOOK: "{title}"
 
 TAGS:
 """
 
 
-def generate_tags_with_gemini(title, description, provider, existing_tags=None):
+def generate_tags_with_gemini(title, description, provider, existing_tags=None, additional_prompt=None):
     """Generate tags using Google's Gemini AI."""
     import time
-    prompt = get_prompt(title, description, existing_tags)
+    prompt = get_prompt(title, description, existing_tags, additional_prompt)
     for key in provider.get_shuffled_keys():
         try:
             genai.configure(api_key=key)
@@ -266,10 +318,10 @@ def generate_tags_with_gemini(title, description, provider, existing_tags=None):
     return None
 
 
-def generate_tags_with_openai(title, description, provider, existing_tags=None):
+def generate_tags_with_openai(title, description, provider, existing_tags=None, additional_prompt=None):
     """Generate tags using OpenAI's GPT models."""
     import time
-    prompt = get_prompt(title, description, existing_tags)
+    prompt = get_prompt(title, description, existing_tags, additional_prompt)
     for key in provider.get_shuffled_keys():
         try:
             openai.api_key = key
@@ -290,11 +342,11 @@ def generate_tags_with_openai(title, description, provider, existing_tags=None):
     return None
 
 
-def generate_tags_with_ollama(title, description, provider, existing_tags=None):
+def generate_tags_with_ollama(title, description, provider, existing_tags=None, additional_prompt=None):
     """Generate tags using a local Ollama model."""
     import time
     model_name = provider.api_keys[0]  # The model name is stored as the "key"
-    prompt = get_prompt(title, description, existing_tags)
+    prompt = get_prompt(title, description, existing_tags, additional_prompt)
 
     try:
         # First verify the model is still available
@@ -340,7 +392,7 @@ def generate_tags_with_ollama(title, description, provider, existing_tags=None):
     return None
 
 
-def generate_tags_with_ai(title, description, providers, existing_tags=None):
+def generate_tags_with_ai(title, description, providers, existing_tags=None, additional_prompt=None):
     """Generate tags by trying each configured AI provider in order."""
     print("   🧠 Asking AI for tags...")
 
@@ -355,7 +407,7 @@ def generate_tags_with_ai(title, description, providers, existing_tags=None):
         if provider.is_configured and provider.name in provider_functions:
             print(f"   Trying provider: {provider.name}...")
             result = provider_functions[provider.name](
-                title, description, provider, existing_tags)
+                title, description, provider, existing_tags, additional_prompt)
             if result:
                 return result
     return None
@@ -377,6 +429,8 @@ def main():
                         help="Replace all existing tags instead of appending.")
     parser.add_argument("--provider", choices=["gemini", "openai", "ollama", "all"],
                         default="all", help="Choose a specific AI provider or try all available.")
+    parser.add_argument("--prompt", type=str,
+                        help="Additional instructions for the AI tagger (e.g., 'Add language tag for non-English titles')")
     args = parser.parse_args()
 
     if not os.path.isdir(args.library_path):
@@ -413,7 +467,11 @@ def main():
         print(f"   Existing Tags: {book.get('tags') or 'None'}")
 
         ai_tags_str = generate_tags_with_ai(
-            book['title'], book.get('comments', ''), selected_providers, book.get('tags'))
+            book['title'],
+            book.get('comments', ''),
+            selected_providers,
+            book.get('tags'),
+            args.prompt)
 
         if not ai_tags_str:
             print("   ⚠️ Skipping book: Failed to generate tags from any AI provider.")
