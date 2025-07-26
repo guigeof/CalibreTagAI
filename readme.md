@@ -74,7 +74,7 @@ python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama -
 - `--provider`: AI provider to use `[--provider] [gemini|openai|ollama|all] (default: all)
 - `--limit`: Number of books to process [--limit 3] ( leave empty to go through all)
 - `--dry-run`: Preview changes without applying them [--dry-run] (empty to apply)
-- `--overwrite`: Replace existing tags instead of merging [--overwrite] (empty to append/merge)
+- `--overwrite`: 🚩🚧🏴‍☠️⚠🛑 Replace existing tags instead of merging [--overwrite] (leave empty to append/merge)
 
 ## ⚠️ Backup Reminder
 
