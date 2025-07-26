@@ -14,7 +14,6 @@ Automatically tag your Calibre e-book library using AI. Currently supports:
 
 - 🌐 Local AI support with Ollama
 - 🤖 Multiple AI providers support
-- ⚡ API key rotation for load balancing
 
 ## Prerequisites
 
@@ -52,6 +51,12 @@ python CalibreAi.py --library-path "path/to/calibre/library"  --dry-run --limit 
 
 Basic usage with default settings:
 
+✅✅✅✅✅✅✅✅✅✅✅✅ Normal Use:
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama
+```
+
+
 ```bash
 python CalibreAi.py --library-path "path/to/calibre/library" 
 ```
@@ -60,11 +65,6 @@ Choose a specific AI provider:
 
 ```bash
 python CalibreAi.py --library-path "path/to/calibre/library" --provider [gemini|openai|ollama]
-```
-
-✅✅✅✅✅✅✅✅✅✅✅✅ Normal Use:
-```bash
-python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama
 ```
 
 🚩🚧🏴‍☠️⚠🛑Replace existing tags instead of merging:
