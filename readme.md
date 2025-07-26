@@ -3,16 +3,18 @@
 Automatically tag your Calibre e-book library using AI. Currently supports:
 
 - Google Gemini AI
-- OpenAI GPT
 - Local Ollama models
+In near future - OpenAI GPT
 
 ## Features
 
-- 🤖 Multiple AI providers support
+
 - 🔄 Smart tag merging with existing tags
 - 🔍 Dry-run mode for preview
-- ⚡ API key rotation for load balancing
+
 - 🌐 Local AI support with Ollama
+- 🤖 Multiple AI providers support
+- ⚡ API key rotation for load balancing
 
 ## Prerequisites
 
