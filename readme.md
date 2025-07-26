@@ -70,7 +70,7 @@ python CalibreAi.py --library-path "path/to/calibre/library" --provider [gemini|
 🚩🚧🏴‍☠️⚠🛑Replace existing tags instead of merging:
 
 ```bash
-python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama --overwrite
+python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama --limit 1 --overwrite
 ```
 
 ## Command-Line Arguments
