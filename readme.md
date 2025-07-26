@@ -62,7 +62,12 @@ Choose a specific AI provider:
 python CalibreAi.py --library-path "path/to/calibre/library" --provider [gemini|openai|ollama]
 ```
 
-Replace existing tags instead of merging:
+✅✅✅✅✅✅✅✅✅✅✅✅ Normal Use:
+```bash
+python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama
+```
+
+🚩🚧🏴‍☠️⚠🛑Replace existing tags instead of merging:
 
 ```bash
 python CalibreAi.py --library-path "path/to/calibre/library" --provider ollama --overwrite
